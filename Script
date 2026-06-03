@@ -1,0 +1,178 @@
+local plrs = game:GetService("Players")
+local rs = game:GetService("RunService")
+
+local plr = plrs.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+
+local db = false
+local db2 = false
+
+MAX_NUM = 5184730692
+
+plr.CharacterAdded:Connect(function(char)
+    local backpack = plr.Backpack
+
+    local hum = char:WaitForChild("Humanoid")
+    local humRp = char:WaitForChild("HumanoidRootPart")
+
+    local found
+
+    hum.WalkSpeed = 24
+
+    for _, v in pairs(char:GetChildren()) do
+        if v.Name == "WingsEnabled" then
+            v.Changed:Connect(function(val)
+                local wingsCharges = char:FindFirstChild("WingsCharges")
+
+                if val == false then
+                    v.Value = true
+                end
+
+                if not wingsCharges then
+                    wingsCharges = Instance.new("IntValue", char)
+                    wingsCharges.Name = "WingsCharges"
+                    wingsCharges.Value = MAX_NUM
+                end
+
+                wingsCharges.Value = MAX_NUM
+            end)
+
+            found = true
+            break
+        end
+    end
+
+    if not found then
+        local wingsEnabled = Instance.new("BoolValue", char)
+        wingsEnabled.Name = "WingsEnabled"
+        wingsEnabled.Value = true
+
+        local wingsCharges = Instance.new("IntValue", char)
+        wingsCharges.Name = "WingsCharges"
+        wingsCharges.Value = MAX_NUM
+    end
+
+    hum.Changed:Connect(function(property)
+        if property == "Sit" then
+            if hum.Sit then
+                hum.Sit = false
+            end
+        elseif property == "Health" then
+            if not db and hum.Health < 100 and hum.Health > 0 then
+                local gap = backpack:FindFirstChild("Golden Apple")
+                local prevEquipped = char:FindFirstChildOfClass("Tool")
+
+                if not gap then
+                    gap = char:FindFirstChild("Golden Apple")
+                    if not gap then return end
+
+                    db = true
+                    task.delay(4, function()
+                        db = false
+                    end)
+
+                    gap:Activate()
+
+                    return
+                end
+
+                db = true
+                task.delay(4, function()
+                    db = false
+                end)
+
+                hum:UnequipTools()
+
+                rs.Heartbeat:Wait()
+                hum:EquipTool(gap)
+
+                rs.Heartbeat:Wait()
+                char[gap.Name]:Activate()
+
+                rs.Heartbeat:Wait()
+                hum:UnequipTools()
+
+                if prevEquipped then
+                    rs.Heartbeat:Wait()
+                    hum:EquipTool(backpack[prevEquipped.Name])
+                end
+            end
+        end
+    end)
+
+    humRp.Changed:Connect(function(property)
+        if property == "Anchored" then
+            if humRp.Anchored then
+                humRp.Anchored = false
+            end
+        end
+    end)
+
+    local mace = backpack:WaitForChild("Mace")
+
+    mace.Activated:Connect(function()
+        if not db2 then
+            db2 = true
+            task.delay(2, function()
+                db2 = false
+            end)
+
+            local closestDistance = math.huge
+            local closestHumRp
+                            
+            for _, v in pairs(plrs:GetChildren()) do
+                if v == plr then continue end
+
+                local vChar = v.Character
+                if not vChar then continue end
+                local vHumRp = vChar:WaitForChild("HumanoidRootPart")
+                if not vHumRp then continue end
+
+                local distance = (humRp.Position - vHumRp.Position).Magnitude
+
+                if distance <= closestDistance then
+                    closestDistance = distance
+                    closestHumRp = vHumRp
+                end
+            end
+
+            if closestHumRp then
+                for _, v in pairs(char:GetChildren()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                    end
+                end
+
+                for i = 1, 50 do
+                    humRp.CFrame = humRp.CFrame:Lerp(closestHumRp.CFrame, 0.3)
+                    rs.Heartbeat:Wait()
+                end
+
+                for _, v in pairs(char:GetChildren()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = true
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+warn("Setting everything up for you...")
+
+hum.Health = 0
+task.wait(plrs.RespawnTime)
+
+warn("Done!")
+print("")
+warn("----- UPDATES COMING SOON -----")
+warn("You can now:")
+warn("- Fly forever without an elytra;")
+warn("- Have 24 walkspeed forever;")
+warn("- Never sit by getting hit;")
+warn("- Eat a golden apple whenever you lose health;")
+warn("- Never get anchored by cobwebs.")
+warn("- Have facilitated macing.")
+print("")
+print("Please do not execute again without rejoining.")
